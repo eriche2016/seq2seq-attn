@@ -119,9 +119,9 @@ function zero_table(t)
   for i = 1, #t do
     if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
       if i == 1 then
-        cutorch.setDevice(opt.gpuid)
+        cutorch.setDevice(opt.gpuid+1)
       else
-        cutorch.setDevice(opt.gpuid2)
+        cutorch.setDevice(opt.gpuid2+1)
       end
     end
     t[i]:zero()
