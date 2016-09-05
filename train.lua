@@ -119,9 +119,9 @@ function zero_table(t)
   for i = 1, #t do
     if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
       if i == 1 then
-        cutorch.setDevice(opt.gpuid)
+        cutorch.setDevice(opt.gpuid+1)
       else
-        cutorch.setDevice(opt.gpuid2)
+        cutorch.setDevice(opt.gpuid2+1)
       end
     end
     t[i]:zero()
@@ -140,9 +140,9 @@ function train(train_data, valid_data)
   for i = 1, #layers do
     if opt.gpuid2 >= 0 then
       if i == 1 then
-        cutorch.setDevice(opt.gpuid)
+        cutorch.setDevice(opt.gpuid+1)
       else
-        cutorch.setDevice(opt.gpuid2)
+        cutorch.setDevice(opt.gpuid2+1)
       end
     end
     local p, gp = layers[i]:getParameters()
@@ -181,9 +181,9 @@ function train(train_data, valid_data)
   print("Number of parameters: " .. num_params)
 
   if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
-    cutorch.setDevice(opt.gpuid)
+    cutorch.setDevice(opt.gpuid+1)
     word_vec_layers[1].weight[1]:zero()
-    cutorch.setDevice(opt.gpuid2)
+    cutorch.setDevice(opt.gpuid2+1)
     word_vec_layers[2].weight[1]:zero()
   else
     word_vec_layers[1].weight[1]:zero()
@@ -230,16 +230,16 @@ function train(train_data, valid_data)
   local h_init = torch.zeros(opt.max_batch_l, opt.rnn_size)
   if opt.gpuid >= 0 then
     h_init = h_init:cuda()
-    cutorch.setDevice(opt.gpuid)
+    cutorch.setDevice(opt.gpuid+1)
     if opt.gpuid2 >= 0 then
       encoder_grad_proto2 = encoder_grad_proto2:cuda()
       encoder_bwd_grad_proto2 = encoder_bwd_grad_proto2:cuda()
       context_proto = context_proto:cuda()
-      cutorch.setDevice(opt.gpuid2)
+      cutorch.setDevice(opt.gpuid2+1)
       encoder_grad_proto = encoder_grad_proto:cuda()
       encoder_bwd_grad_proto = encoder_bwd_grad_proto:cuda()
       context_proto2 = context_proto2:cuda()
-      cutorch.setDevice(opt.gpuid)
+      cutorch.setDevice(opt.gpuid+1)
     else
       context_proto = context_proto:cuda()
       encoder_grad_proto = encoder_grad_proto:cuda()
@@ -262,7 +262,7 @@ function train(train_data, valid_data)
     table.insert(init_bwd_enc, h_init:clone())
   end
   if opt.gpuid2 >= 0 then
-    cutorch.setDevice(opt.gpuid2)
+    cutorch.setDevice(opt.gpuid2+1)
   end
   if opt.input_feed == 1 then
     table.insert(init_fwd_dec, h_init:clone())
@@ -360,7 +360,7 @@ function train(train_data, valid_data)
         encoder_bwd_grads = encoder_bwd_grad_proto[{{1, batch_l}, {1, source_l}}]
       end
       if opt.gpuid >= 0 then
-        cutorch.setDevice(opt.gpuid)
+        cutorch.setDevice(opt.gpuid+1)
       end
       local rnn_state_enc = reset_state(init_fwd_enc, batch_l, 0)
       local context = context_proto[{{1, batch_l}, {1, source_l}}]
@@ -386,7 +386,7 @@ function train(train_data, valid_data)
       end
 
       if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
-        cutorch.setDevice(opt.gpuid2)
+        cutorch.setDevice(opt.gpuid2+1)
         local context2 = context_proto2[{{1, batch_l}, {1, source_l}}]
         context2:copy(context)
         context = context2
@@ -480,7 +480,7 @@ function train(train_data, valid_data)
 
       -- backward prop encoder
       if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
-        cutorch.setDevice(opt.gpuid)
+        cutorch.setDevice(opt.gpuid+1)
         local encoder_grads2 = encoder_grad_proto2[{{1, batch_l}, {1, source_l}}]
         encoder_grads2:zero()
         encoder_grads2:copy(encoder_grads)
@@ -558,9 +558,9 @@ function train(train_data, valid_data)
       for j = 1, #grad_params do
         if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
           if j == 1 then
-            cutorch.setDevice(opt.gpuid)
+            cutorch.setDevice(opt.gpuid+1)
           else
-            cutorch.setDevice(opt.gpuid2)
+            cutorch.setDevice(opt.gpuid2+1)
           end
         end
         if shrinkage < 1 then
@@ -676,7 +676,7 @@ function eval(data)
     local target, target_out, nonzeros, source = d[1], d[2], d[3], d[4]
     local batch_l, target_l, source_l = d[5], d[6], d[7]
     if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
-      cutorch.setDevice(opt.gpuid)
+      cutorch.setDevice(opt.gpuid+1)
     end
     local rnn_state_enc = reset_state(init_fwd_enc, batch_l)
     local context = context_proto[{{1, batch_l}, {1, source_l}}]
@@ -689,7 +689,7 @@ function eval(data)
     end
 
     if opt.gpuid >= 0 and opt.gpuid2 >= 0 then
-      cutorch.setDevice(opt.gpuid2)
+      cutorch.setDevice(opt.gpuid2+1)
       local context2 = context_proto2[{{1, batch_l}, {1, source_l}}]
       context2:copy(context)
       context = context2
@@ -780,7 +780,7 @@ function main()
       print('loading cudnn...')
       require 'cudnn'
     end
-    cutorch.setDevice(opt.gpuid)
+    cutorch.setDevice(opt.gpuid+1)
     cutorch.manualSeed(opt.seed)
   end
 
@@ -857,15 +857,15 @@ function main()
     for i = 1, #layers do
       if opt.gpuid2 >= 0 then
         if i == 1 or i == 4 then
-          cutorch.setDevice(opt.gpuid) --encoder on gpu1
+          cutorch.setDevice(opt.gpuid+1) --encoder on gpu1
         else
-          cutorch.setDevice(opt.gpuid2) --decoder/generator on gpu2
+          cutorch.setDevice(opt.gpuid2+1) --decoder/generator on gpu2
         end
       end
       layers[i]:cuda()
     end
     if opt.gpuid2 >= 0 then
-      cutorch.setDevice(opt.gpuid2) --criterion on gpu2
+      cutorch.setDevice(opt.gpuid2+1) --criterion on gpu2
     end
     criterion:cuda()
   end
